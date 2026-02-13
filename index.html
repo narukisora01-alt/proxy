@@ -8,14 +8,27 @@
     <script>
         async function checkFollowing(userId, targetUserId) {
             try {
-                const response = await fetch(`https://friends.roblox.com/v1/users/${userId}/followings?sortOrder=Desc&limit=100`);
+                const response = await fetch(`https://friends.roblox.com/v1/users/${userId}/followings?sortOrder=Desc&limit=100`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Origin': 'https://www.roblox.com',
+                        'Referer': 'https://www.roblox.com/'
+                    },
+                    mode: 'cors'
+                });
+                
+                if (!response.ok) {
+                    return { success: false, error: `HTTP ${response.status}` };
+                }
+                
                 const data = await response.json();
                 
                 if (data && data.data) {
                     const isFollowing = data.data.some(following => following.id === parseInt(targetUserId));
                     return { success: true, isFollowing: isFollowing };
                 }
-                return { success: false, error: "Invalid response" };
+                return { success: false, error: "Invalid response format" };
             } catch (error) {
                 return { success: false, error: error.message };
             }
@@ -27,10 +40,10 @@
 
         if (userId && targetUserId) {
             checkFollowing(userId, targetUserId).then(result => {
-                document.body.innerHTML = JSON.stringify(result);
+                document.body.innerHTML = `<pre>${JSON.stringify(result, null, 2)}</pre>`;
             });
         } else {
-            document.body.innerHTML = JSON.stringify({ success: false, error: "Missing parameters. Use ?userId=X&targetUserId=Y" });
+            document.body.innerHTML = `<pre>${JSON.stringify({ success: false, error: "Missing parameters. Use ?userId=X&targetUserId=Y" }, null, 2)}</pre>`;
         }
     </script>
 </body>
